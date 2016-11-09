@@ -318,6 +318,15 @@ def _CheckAtLeast3DImage(image):
                      image.get_shape())
 
 
+# TODO: Worst name in the world.
+def _list_with_length_equal_to_rank(images, dims, updates):
+
+  rank = array_ops.rank(images)
+  dynamic_list = variables.Variable(array_ops.ones([rank]))
+  dynamic_list = gen_state_ops.scatter_update(dynamic_list, dims, updates)
+  return dynamic_list
+
+
 def _flip_images(images, image_dim_to_flip, random=False, seed=None):
   """Convenience function for flipping image(s) generically.
 
@@ -341,6 +350,7 @@ def _flip_images(images, image_dim_to_flip, random=False, seed=None):
   if random:
       uniform_random = random_ops.random_uniform([], 0, 1.0, seed=seed)
 
+  mirror = _list_with_length_equal_to_rank(images, [image_dim_to_flip], [uniform_random])
   rank = array_ops.rank(images)
   mirror = variables.Variable(array_ops.ones([rank]))
   mirror = gen_state_ops.scatter_update(mirror, [rank - (3 - image_dim_to_flip)], [uniform_random])
